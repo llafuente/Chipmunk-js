@@ -1,1 +1,36 @@
-<script src="../bench.js"></script>
+<!-- js-2dmath -->
+<script src="../node_modules/js-2dmath/js-2dmath-browser.js"></script>
+<script>
+console.log(require("js-2dmath"));
+var Vec2 = require("js-2dmath").Vec2;
+</script>
+
+<script src="../lib/chipmunk.js"></script>
+<!-- <script src="../lib/cpVect.js"></script> -->
+<script src="../lib/cpBB.js"></script>
+<script src="../lib/cpShape.js"></script>
+<script src="../lib/cpPolyShape.js"></script>
+<script src="../lib/cpBody.js"></script>
+<script src="../lib/cpSpatialIndex.js"></script>
+<script src="../lib/cpBBTree.js"></script>
+<script src="../lib/cpArbiter.js"></script>
+<script src="../lib/cpCollision.js"></script>
+<script src="../lib/cpSpace.js"></script>
+<script src="../lib/cpSpaceComponent.js"></script>
+<script src="../lib/cpSpaceQuery.js"></script>
+<script src="../lib/cpSpaceStep.js"></script>
+<script src="../lib/constraints/util.js"></script>
+<script src="../lib/constraints/cpConstraint.js"></script>
+<script src="../lib/constraints/cpPinJoint.js"></script>
+<script src="../lib/constraints/cpSlideJoint.js"></script>
+<script src="../lib/constraints/cpPivotJoint.js"></script>
+<script src="../lib/constraints/cpGrooveJoint.js"></script>
+<script src="../lib/constraints/cpDampedSpring.js"></script>
+<script src="../lib/constraints/cpDampedRotarySpring.js"></script>
+<script src="../lib/constraints/cpRotaryLimitJoint.js"></script>
+<script src="../lib/constraints/cpRatchetJoint.js"></script>
+<script src="../lib/constraints/cpGearJoint.js"></script>
+<script src="../lib/constraints/cpSimpleMotor.js "></script>
+
+<script src="mersenne.js"></script>
+<script src="bench.js"></script>

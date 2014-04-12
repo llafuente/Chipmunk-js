@@ -286,4 +286,6 @@ mersenne.seed_array = function(A) {
     gen.init_by_array(A);
 }
 
-
+if (typeof exports !== 'undefined') {
+	module.exports = mersenne;
+}

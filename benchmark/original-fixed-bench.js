@@ -1,11 +1,3 @@
-
-if (typeof exports !== 'undefined') {
-	Vec2 = require("../../js-2dmath/index.js").Vec2;
-	mersenne = require("./mersenne.js");
-	//cp = require("../cp.js");
-	console.log(mersenne);
-}
-
 var space;
 var bench_list = [];
 var add_benchmark = function(name, initfn) {
@@ -16,7 +8,7 @@ var add_benchmark = function(name, initfn) {
 }
 
 function v(x, y) {
-    return new Vec2.create(x, y);
+    return new Vect(x, y);
 }
 
 var simple_terrain_verts = [
@@ -31,28 +23,27 @@ var simple_terrain_verts = [
 ];
 
 var frand_unit_circle = function(){
-    var vv = new Vec2.create(mersenne.rand_real()*2 - 1, mersenne.rand_real()*2 - 1);
-    return (Vec2.lengthSq(vv) < 1 ? vv : frand_unit_circle());
+    var vv = new Vect(mersenne.rand_real()*2 - 1, mersenne.rand_real()*2 - 1);
+    return (vlengthsq(vv) < 1 ? vv : frand_unit_circle());
 };
 
 var add_circle = function(i, radius){
     var mass = radius*radius/25;
-    var body = space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, Vec2.zero())));
-//  cpBody *body = cpSpaceAddBody(space, cpBodyInit(&bodies[i], mass, cpMomentForCircle(mass, 0, radius, Vec2.zero())));
-    body.p = [0, 0];
-    Vec2.scale(body.p, frand_unit_circle(), 180);
+    var body = space.addBody(new Body(mass, cp.momentForCircle(mass, 0, radius, vzero)));
+//  cpBody *body = cpSpaceAddBody(space, cpBodyInit(&bodies[i], mass, cpMomentForCircle(mass, 0, radius, vzero)));
+    body.p = vmult(frand_unit_circle(), 180);
 
-    var shape = space.addShape(new CircleShape(body, radius, Vec2.zero()));
-//  cpShape *shape = cpSpaceAddShape(space, cpCircleShapeInit(&circles[i], body, radius, Vec2.zero()));
+
+    var shape = space.addShape(new CircleShape(body, radius, vzero));
+//  cpShape *shape = cpSpaceAddShape(space, cpCircleShapeInit(&circles[i], body, radius, vzero));
     shape.e = 0; shape.u = 0.9;
 };
 
 var add_box = function(i, size){
     var mass = size*size/100;
-    var body = space.addBody(new cp.Body(mass, cp.momentForBox(mass, size, size)));
+    var body = space.addBody(new Body(mass, cp.momentForBox(mass, size, size)));
 //  cpBody *body = cpSpaceAddBody(space, cpBodyInit(&bodies[i], mass, cpMomentForBox(mass, size, size)));
-    body.p = [0, 0];
-    Vec2.scale(body.p, frand_unit_circle(), 180);
+    body.p = vmult(frand_unit_circle(), 180);
 
 
     var shape = space.addShape(new BoxShape(body, size, size));
@@ -63,22 +54,21 @@ var add_hexagon = function(i, radius){
     var hexagon = new Array(12);
     for(var i=0; i<12; i+=2){
         var angle = -Math.PI*i/6;
-        //var p = vmult(v(Math.cos(angle), Math.sin(angle)), radius);
-        hexagon[i] = Math.cos(angle) * radius;
-        hexagon[i+1] = Math.sin(angle) * radius;
+        var p = vmult(v(Math.cos(angle), Math.sin(angle)), radius);
+        hexagon[i] = p.x;
+        hexagon[i+1] = p.y;
     }
 
     var mass = radius*radius;
-    var body = space.addBody(new cp.Body(mass, cp.momentForPoly(mass, hexagon, Vec2.zero())));
-    body.p = [0, 0];
-    Vec2.scale(body.p, frand_unit_circle(), 180);
+    var body = space.addBody(new Body(mass, cp.momentForPoly(mass, hexagon, vzero)));
+    body.p = vmult(frand_unit_circle(), 180);
 
-    var shape = space.addShape(new PolyShape(body, hexagon, Vec2.zero()));
+    var shape = space.addShape(new PolyShape(body, hexagon, vzero));
     shape.e = 0; shape.u = 0.9;
 };
 
 var setupSpace_simpleTerrain = function(){
-    space = new cp.Space();
+    space = new Space();
     space.iterations = 10;
     space.gravity = v(0, -100);
     space.collisionSlop = 0.5;
@@ -86,7 +76,7 @@ var setupSpace_simpleTerrain = function(){
     var offset = v(-320, -240);
     for(var i=0; i<(simple_terrain_verts.length - 1); i++){
         var a = simple_terrain_verts[i], b = simple_terrain_verts[i+1];
-        space.addShape(new cp.SegmentShape(space.staticBody, Vec2.add(a, a, offset), Vec2.add(b, b, offset), 0));
+        space.addShape(new SegmentShape(space.staticBody, vadd(a, offset), vadd(b, offset), 0));
     }
 };
 
@@ -176,19 +166,16 @@ add_benchmark({name:'ComplexTerrainCircles 1000', ticks:100}, function(){
     var offset = v(-320, -240);
     for(var i=0; i<(complex_terrain_verts.length - 1); i++){
         var a = complex_terrain_verts[i], b = complex_terrain_verts[i+1];
-        space.addShape(new cp.SegmentShape(space.staticBody, Vec2.add([], a, offset), Vec2.add([], b, offset), 0));
+        space.addShape(new SegmentShape(space.staticBody, vadd(a, offset), vadd(b, offset), 0));
     }
 
     for(var i=0; i<1000; i++){
         var radius = 5;
         var mass = radius*radius;
-        var body = space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, Vec2.zero())));
-        //body.p = Vec2.add([], vmult(frand_unit_circle(), 180), v(0, 300));
-        body.p = [0, 0];
-        Vec2.scale(body.p, frand_unit_circle(), 180);
-        Vec2.add(body.p, body.p, v(0, 300));
+        var body = space.addBody(new Body(mass, cp.momentForCircle(mass, 0, radius, vzero)));
+        body.p = vadd(vmult(frand_unit_circle(), 180), v(0, 300));
 
-        var shape = space.addShape(new CircleShape(body, radius, Vec2.zero()));
+        var shape = space.addShape(new CircleShape(body, radius, vzero));
         shape.e = 0; shape.u = 0;
     }
 
@@ -204,27 +191,24 @@ add_benchmark({name:'ComplexTerrainHexagons 1000', ticks:50}, function(){
     var offset = v(-320, -240);
     for(var i=0; i<(complex_terrain_verts.length - 1); i++){
         var a = complex_terrain_verts[i], b = complex_terrain_verts[i+1];
-        space.addShape(new cp.SegmentShape(space.staticBody, Vec2.add([], a, offset), Vec2.add([], b, offset), 0));
+        space.addShape(new SegmentShape(space.staticBody, vadd(a, offset), vadd(b, offset), 0));
     }
 
     var radius = 5;
     var hexagon = new Array(12);
     for(var i=0; i<12; i+=2){
         var angle = -Math.PI*i/6;
-        var p = [0, 0];
-        Vec2.scale(p, v(Math.cos(angle), Math.sin(angle)), radius);
-        hexagon[i] = p[0];
-        hexagon[i+1] = p[1];
+        var p = vmult(v(Math.cos(angle), Math.sin(angle)), radius);
+        hexagon[i] = p.x;
+        hexagon[i+1] = p.y;
     }
 
     for(var i=0; i<1000; i++){
         var mass = radius*radius;
-        var body = space.addBody(new cp.Body(mass, cp.momentForPoly(mass, hexagon, Vec2.zero())));
-        body.p = [0, 0];
-        Vec2.scale(body.p, frand_unit_circle(), 180);
-        Vec2.add(body.p, body.p, v(0, 300));
+        var body = space.addBody(new Body(mass, cp.momentForPoly(mass, hexagon, vzero)));
+        body.p = vadd(vmult(frand_unit_circle(), 180), v(0, 300));
 
-        var shape = space.addShape(new PolyShape(body, hexagon, Vec2.zero()));
+        var shape = space.addShape(new PolyShape(body, hexagon, vzero));
         shape.e = 0; shape.u = 0;
     }
 
@@ -285,21 +269,19 @@ add_benchmark('BouncyTerrainCircles 500', function(){
     var offset = v(-320, -240);
     for(var i=0; i<(bouncy_terrain_verts.length - 1); i++){
         var a = bouncy_terrain_verts[i], b = bouncy_terrain_verts[i+1];
-        var shape = space.addShape(new cp.SegmentShape(space.staticBody, Vec2.add([], a, offset), Vec2.add([], b, offset), 0));
+        var shape = space.addShape(new SegmentShape(space.staticBody, vadd(a, offset), vadd(b, offset), 0));
         shape.e = 1;
     }
 
     for(var i=0; i<500; i++){
         var radius = 5;
         var mass = radius*radius;
-        var body = space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, Vec2.zero())));
-        body.p = [0, 0];
-        Vec2.scale(body.p, frand_unit_circle(), 130);
-        var vv = [0, 0];
-        Vec2.scale(body.p, frand_unit_circle(), 50);
-        body.vx = vv[0]; body.vy = vv[1];
+        var body = space.addBody(new Body(mass, cp.momentForCircle(mass, 0, radius, vzero)));
+        body.p = vadd(vmult(frand_unit_circle(), 130), vzero);
+        var vv = vmult(frand_unit_circle(), 50);
+        body.vx = vv.x; body.vy = vv.y;
 
-        var shape = space.addShape(new CircleShape(body, radius, Vec2.zero()));
+        var shape = space.addShape(new CircleShape(body, radius, vzero));
         shape.e = 1;
     }
 
@@ -313,7 +295,7 @@ add_benchmark('BouncyTerrainHexagons 500', function(){
     var offset = v(-320, -240);
     for(var i=0; i<(bouncy_terrain_verts.length - 1); i++){
         var a = bouncy_terrain_verts[i], b = bouncy_terrain_verts[i+1];
-        var shape = space.addShape(new cp.SegmentShape(space.staticBody, Vec2.add([], a, offset), Vec2.add([], b, offset), 0));
+        var shape = space.addShape(new SegmentShape(space.staticBody, vadd(a, offset), vadd(b, offset), 0));
         shape.e = 1;
     }
 
@@ -321,24 +303,19 @@ add_benchmark('BouncyTerrainHexagons 500', function(){
     var hexagon = new Array(12);
     for(var i=0; i<12; i+=2){
         var angle = -Math.PI*i/6;
-        //var p = vmult(v(Math.cos(angle), Math.sin(angle)), radius);
-        var p = [Math.cos(angle) * radius, Math.sin(angle) * radius];
-        hexagon[i] = p[0];
-        hexagon[i+1] = p[1];
+        var p = vmult(v(Math.cos(angle), Math.sin(angle)), radius);
+        hexagon[i] = p.x;
+        hexagon[i+1] = p.y;
     }
 
     for(var i=0; i<500; i++){
         var mass = radius*radius;
-        var body = space.addBody(new cp.Body(mass, cp.momentForPoly(mass, hexagon, Vec2.zero())));
-        //body.p = Vec2.add([], vmult(frand_unit_circle(), 130), Vec2.zero());
-        body.p = frand_unit_circle();
-		Vec2.scale(body.p, body.p, 130);
+        var body = space.addBody(new Body(mass, cp.momentForPoly(mass, hexagon, vzero)));
+        body.p = vadd(vmult(frand_unit_circle(), 130), vzero);
+        var vv = vmult(frand_unit_circle(), 50);
+        body.vx = vv.x; body.vy = vv.y;
 
-        var vv = frand_unit_circle();
-		Vec2.scale(body.p, body.p, 50);
-        body.vx = vv[0]; body.vy = vv[1];
-
-        var shape = space.addShape(new PolyShape(body, hexagon, Vec2.zero()));
+        var shape = space.addShape(new PolyShape(body, hexagon, vzero));
         shape.e = 1;
     }
 
@@ -362,10 +339,10 @@ add_benchmark({name:'NoCollide', ticks:2000}, function(){
 
     var radius = 4.5;
 
-    space.addShape(new cp.SegmentShape(space.staticBody, v(-330-radius, -250-radius), v( 330+radius, -250-radius), 0)).e = 1;
-    space.addShape(new cp.SegmentShape(space.staticBody, v( 330+radius,  250+radius), v( 330+radius, -250-radius), 0)).e = 1;
-    space.addShape(new cp.SegmentShape(space.staticBody, v( 330+radius,  250+radius), v(-330-radius,  250+radius), 0)).e = 1;
-    space.addShape(new cp.SegmentShape(space.staticBody, v(-330-radius, -250-radius), v(-330-radius,  250+radius), 0)).e = 1;
+    space.addShape(new SegmentShape(space.staticBody, v(-330-radius, -250-radius), v( 330+radius, -250-radius), 0)).e = 1;
+    space.addShape(new SegmentShape(space.staticBody, v( 330+radius,  250+radius), v( 330+radius, -250-radius), 0)).e = 1;
+    space.addShape(new SegmentShape(space.staticBody, v( 330+radius,  250+radius), v(-330-radius,  250+radius), 0)).e = 1;
+    space.addShape(new SegmentShape(space.staticBody, v(-330-radius, -250-radius), v(-330-radius,  250+radius), 0)).e = 1;
 
     for(var x=-320; x<=320; x+=20){
         for(var y=-240; y<=240; y+=20){
@@ -375,22 +352,22 @@ add_benchmark({name:'NoCollide', ticks:2000}, function(){
 
     for(var y=10-240; y<=240; y+=40){
         var mass = 7;
-        var body = space.addBody(new cp.Body(mass, momentForCircle(mass, 0, radius, Vec2.zero())));
+        var body = space.addBody(new Body(mass, momentForCircle(mass, 0, radius, vzero)));
         body.p = v(-320, y);
         body.vx = 100;
 
-        var shape = space.addShape(new CircleShape(body, radius, Vec2.zero()));
+        var shape = space.addShape(new CircleShape(body, radius, vzero));
         shape.e = 1;
         shape.collision_type = 2;
     }
 
     for(var x=30-320; x<=320; x+=40){
         var mass = 7;
-        var body = space.addBody(new cp.Body(mass, momentForCircle(mass, 0, radius, Vec2.zero())));
+        var body = space.addBody(new Body(mass, momentForCircle(mass, 0, radius, vzero)));
         body.p = v(x, -240);
         body.vy = 100;
 
-        var shape = space.addShape(new CircleShape(body, radius, Vec2.zero()));
+        var shape = space.addShape(new CircleShape(body, radius, vzero));
         shape.e = 1;
         shape.collision_type = 2;
     }
@@ -410,7 +387,7 @@ add_benchmark({name:'PyramidTopple', dt:1/180, ticks:400}, function(){
         var mass = 1;
         var moment = cp.momentForBox(mass, WIDTH, HEIGHT);
 
-        var body = space.addBody(new cp.Body(mass, moment));
+        var body = space.addBody(new Body(mass, moment));
         body.setPos(pos);
 
         var shape = (flipped ? new BoxShape(body, HEIGHT, WIDTH) : new BoxShape(body, WIDTH, HEIGHT));
@@ -424,7 +401,7 @@ add_benchmark({name:'PyramidTopple', dt:1/180, ticks:400}, function(){
     space.sleepTimeThreshold = 0.5;
     space.collisionSlop = 0.5;
 
-    var floor = space.addShape(new cp.SegmentShape(space.staticBody, v(0, 0), v(640, 0), 0));
+    var floor = space.addShape(new SegmentShape(space.staticBody, v(0, 0), v(640, 0), 0));
     floor.setElasticity(1);
     floor.setFriction(1);
 
@@ -434,22 +411,22 @@ add_benchmark({name:'PyramidTopple', dt:1/180, ticks:400}, function(){
         for(var j=0; j<(n - i); j++){
             var offset = v(320 + (j - (n - 1 - i)*0.5)*1.5*HEIGHT, (i + 0.5)*(HEIGHT + 2*WIDTH) - WIDTH);
             add_domino(offset, false);
-            add_domino(Vec2.add([], offset, v(0, (HEIGHT + WIDTH)/2)), true);
+            add_domino(vadd(offset, v(0, (HEIGHT + WIDTH)/2)), true);
 
             if(j === 0){
-                add_domino(Vec2.add([], offset, v(0.5*(WIDTH - HEIGHT), HEIGHT + WIDTH)), false);
+                add_domino(vadd(offset, v(0.5*(WIDTH - HEIGHT), HEIGHT + WIDTH)), false);
             }
 
             if(j != n - i - 1){
-                add_domino(Vec2.add([], offset, v(HEIGHT*0.75, (HEIGHT + 3*WIDTH)/2)), true);
+                add_domino(vadd(offset, v(HEIGHT*0.75, (HEIGHT + 3*WIDTH)/2)), true);
             } else {
-                add_domino(Vec2.add([], offset, v(0.5*(HEIGHT - WIDTH), HEIGHT + WIDTH)), false);
+                add_domino(vadd(offset, v(0.5*(HEIGHT - WIDTH), HEIGHT + WIDTH)), false);
             }
         }
     }
 
     // Add a circle to knock the dominoes down
-    var body = space.addBody(new cp.Body(2, cp.momentForCircle(2, 0, 5, v(0,0))));
+    var body = space.addBody(new Body(2, cp.momentForCircle(2, 0, 5, v(0,0))));
     body.setPos(v(65, 100));
     var shape = space.addShape(new CircleShape(body, 5, v(0,0)));
     shape.setElasticity(0);
@@ -464,7 +441,7 @@ var SEED = 123124;
 
 var reset_stats = function() {
     traces = {};
-    numVec2.creates = 0;
+    numVects = 0;
     numContacts = 0;
     numNodes = 0;
     numLeaves = 0;
@@ -500,7 +477,7 @@ var bench = function(){
         var bench = bench_list[i],
             run;
 
-        print(i, bench.name);
+        print(bench.name);
 
         sample = new Array(3);
         for(run = 0; run < sample.length; run++) {
@@ -539,7 +516,7 @@ bench();
 //profile();
 
 /*
-print('Vec2.creates: ' + numVec2.creates);
+print('vects: ' + numVects);
 print('contacts: ' + numContacts);
 print('node: ' + numNodes);
 print('leaf: ' + numLeaves);
@@ -548,7 +525,7 @@ print('pairs: ' + numPairs);
 print('applyImpulse: ' + numApplyImpulse);
 print('applyContact: ' + numApplyContact);
 
-print(numVec2.creates);
+print(numVects);
 print(numContacts);
 print(numNodes);
 print(numLeaves);
